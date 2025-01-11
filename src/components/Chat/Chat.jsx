@@ -28,8 +28,12 @@ export function Chat({ messages }) {
   //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   // }, [messages]);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    let lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role === "user") {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
+  
   return (
     <div className={styles.Chat}>
       {[WELCOME_MESSAGE_GROUP, ...messagesGroups].map(

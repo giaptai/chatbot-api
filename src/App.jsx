@@ -13,6 +13,17 @@ function App() {
   const assistant = new Assistant();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+
+  function updateLastMessageContent(content) {
+    setMessages((prevMessages) =>
+      prevMessages.map((message, index) =>
+        index === prevMessages.length - 1
+          ? { ...message, content: `${message.content}${content}` }
+          : message
+      )
+    );
+  }
 
   function addMessage(message) {
     setMessages((prevMessages) => [...prevMessages, message]);
@@ -23,13 +34,31 @@ function App() {
     setIsLoading(true);
     //I recommend you for all API requests use try catch
     try {
-      let result = await assistant.chat(content, messages);
-      addMessage({ content: result, role: "Assistant" });
+      // let result = await assistant.chat(content, messages); //openai
+      // let result = await assistant.chat(content); //simple text generate gemini
+      let result = await assistant.chatStream(content); //stream text generate gemini
+      let isFirstChunk = false;
+
+      for await (const chunk of result) {
+        if (!isFirstChunk) {
+          isFirstChunk = true;
+          addMessage({ content: "", role: "Assistant" });
+          setIsLoading(false);
+          setIsStreaming(true);
+        }
+        updateLastMessageContent(chunk);
+      }
+      setIsStreaming(false);
+      // addMessage({ content: result, role: "Assistant" });
     } catch (error) {
       addMessage({
         content: "Sorry, I couldn't process your request now !",
         role: "System",
       });
+      //Because, um, if you're trying to ask to get the response, it crashed.
+      //So we need to disable loading, because at the beginning of the method, we enabled it.
+      setIsLoading(false);
+      setIsStreaming(false);
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -50,7 +79,10 @@ function App() {
       <main className={styles.ChatContainer}>
         <Chat messages={messages} />
       </main>
-      <Controls isDisable={isLoading} onSend={handleContentSend} />
+      <Controls
+        isDisable={isLoading || isStreaming}
+        onSend={handleContentSend}
+      />
     </div>
   );
 }
