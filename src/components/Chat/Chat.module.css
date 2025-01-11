@@ -1,0 +1,33 @@
+.Chat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    height: 100%;
+    padding: 0.9rem;
+    overflow-y: auto;
+}
+
+.Group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.Group:nth-last-of-type(2) {
+    /* 1rem - gap between groups */
+    min-height: calc(100% - 1rem);
+}
+
+.Message {
+    /* width: 90%;
+    padding: 0 16px; */
+    border-radius: 1rem;
+    font-size: clamp(11px, 14px, 15px);
+
+    &[data-role="user"] {
+        width: 100%;
+        padding: 0.1rem 0.7rem;
+        align-self: flex-end;
+        background: light-dark(#f3f3f3, #303030);
+    }
+}
